@@ -133,7 +133,7 @@
             form.reset();
             alert("You're in! Check your inbox for confirmation.");
           } else {
-            alert("Something went wrong. Please try again.");
+            alert(JSON.stringify(result));
           }
 
         } catch (error) {
