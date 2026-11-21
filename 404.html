@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Page not found | Aroxwell</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#060606">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="bar">
+      <a class="logo" href="/" aria-label="Aroxwell home"><img src="/assets/logo.svg" alt="Aroxwell" width="259" height="50"></a>
+      <nav class="nav-pill glass" aria-label="Main">
+        <a href="/">Home</a>
+        <a href="/#library">Free guides</a>
+      </nav>
+      <a class="btn btn-glass glass header-cta" href="https://www.youtube.com/@aroxwell" rel="noopener">YouTube <span class="arrow" aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-visual" aria-hidden="true">
+       <div class="stage">
+        <div class="halo"></div>
+        <svg class="orbits back" viewBox="0 0 1000 1000">
+          <defs>
+            <linearGradient id="goldStroke" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#9a7140" stop-opacity="0"/>
+              <stop offset=".3" stop-color="#f6e3b8"/>
+              <stop offset=".7" stop-color="#d6b06f"/>
+              <stop offset="1" stop-color="#9a7140" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <g transform="rotate(-14 500 500)">
+            <path class="ring" d="M20 500a480 118 0 1 0 960 0a480 118 0 1 0-960 0"/>
+            <path class="comet" pathLength="1000" d="M20 500a480 118 0 1 0 960 0a480 118 0 1 0-960 0"/>
+          </g>
+          <g transform="rotate(11 500 500)">
+            <path class="ring thin" d="M70 500a430 150 0 1 0 860 0a430 150 0 1 0-860 0"/>
+            <path class="comet slow" pathLength="1000" d="M70 500a430 150 0 1 0 860 0a430 150 0 1 0-860 0"/>
+          </g>
+        </svg>
+        <div class="sculpture">
+        <picture>
+          <source type="image/webp" srcset="/assets/brain-700.webp 700w, /assets/brain.webp 1100w" sizes="(max-width: 700px) 100vw, 680px">
+          <img src="/assets/brain.png" alt="" width="700" height="640" fetchpriority="high">
+        </picture>
+        <div class="sheen"></div>
+        </div>
+        <svg class="orbits front" viewBox="0 0 1000 1000">
+          <g transform="rotate(-14 500 500)">
+            <path class="ring" d="M20 500a480 118 0 1 0 960 0a480 118 0 1 0-960 0"/>
+            <path class="comet" pathLength="1000" d="M20 500a480 118 0 1 0 960 0a480 118 0 1 0-960 0"/>
+          </g>
+          <g transform="rotate(11 500 500)">
+            <path class="ring thin" d="M70 500a430 150 0 1 0 860 0a430 150 0 1 0-860 0"/>
+            <path class="comet slow" pathLength="1000" d="M70 500a430 150 0 1 0 860 0a430 150 0 1 0-860 0"/>
+          </g>
+        </svg>
+        <div class="dust"></div>
+       </div>
+      </div>
+      <div class="hero-copy">
+        <p class="label">Error 404</p>
+        <h1 class="title">
+          <span class="title-top">Lost your</span>
+          <span class="title-script">way</span>
+        </h1>
+        <p class="lead">This page doesn't exist. If you came from a video, every free guide is in the library.</p>
+        <div class="hero-actions">
+          <a class="btn btn-glass glass" href="/#library">Open the library <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn-glass glass" href="/">Home</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/assets/site.js" defer></script>
+  <script type="importmap">{"imports": {"three": "/assets/vendor/three/build/three.module.min.js", "three/addons/": "/assets/vendor/three/examples/jsm/"}}</script>
+  <script type="module" src="/assets/brain3d.js"></script>
+</body>
+</html>
