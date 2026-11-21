@@ -612,6 +612,9 @@ main { flex: 1; }
 .hero-visual .sculpture { transition: opacity 1.2s var(--ease); }
 .has-3d .hero-visual .sculpture { opacity: 0; }
 .brain-pending .hero-visual .sculpture { opacity: 0 !important; } /* set in <head> while the 3D brain loads */
+.has-3d .hero-visual .sculpture { animation: none; filter: none; }   /* hidden behind the 3D brain: don't keep animating it */
+/* hero scrolled out of view (site.js): pause its dust, comets and glow so phones don't keep working on them */
+.hero.offscreen, .hero.offscreen * { animation-play-state: paused !important; }
 /* with the 3D brain, the brain turns itself: keep the scene (and the SVG orbit rings) level */
 .has-3d.hero { animation: none; }
 .has-3d .stage { transform: none; }

@@ -17,6 +17,13 @@ const hero = document.querySelector(".hero");
 const visual = hero && hero.querySelector(".hero-visual");
 const params = new URLSearchParams(location.search);
 const TEST = params.has("3dtest");
+const PERF = params.has("perf");
+const SIMSLOW = PERF && params.has("simslow");
+// Phones/tablets (touch screens): draw at 30 frames/s and a lower pixel density. The motion is a
+// slow sway, so 30 fps looks the same, and together this is ~70% less work for the phone (less heat).
+const PHONE = matchMedia("(pointer: coarse)").matches;
+const TARGET_FPS = PHONE ? 30 : 60;
+let maxPixelRatio = PHONE ? 1.5 : 2;   // aroxwell.com/?perf shows live load numbers (for testing on phones)
 const LIVE = !params.has("still");
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const saveData = navigator.connection && navigator.connection.saveData;
@@ -65,7 +72,7 @@ async function start() {
   if (sculpture) sculpture.after(canvas); else visual.appendChild(canvas);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NeutralToneMapping;   // keeps the gold rich and saturated (ACES washed it out)
   renderer.toneMappingExposure = 1.0;
@@ -151,9 +158,41 @@ async function start() {
   const SIDE = Math.PI / 2;                 // model's front (-Z) turned to the left
   let spin = 0, ry = SIDE;
 
-  function frame() {
+  // Weak device guard: if frames keep arriving much slower than the target, first lower the
+  // pixel density, and if it's still struggling, stop the 3D and show the still image instead.
+  const minGap = 1000 / TARGET_FPS - 2;
+  let running = true, lastDraw = 0, winStart = 0, winFrames = 0, slowWindows = 0;
+  const startedAt = performance.now();
+  function checkSpeed(now) {
+    if (!winStart) { winStart = now; winFrames = 0; return; }
+    winFrames++;
+    if (now - winStart < 2000) return;
+    const fps = winFrames * 1000 / (now - winStart);
+    winStart = now; winFrames = 0;
+    if (now - startedAt < 3000) return;                     // ignore the busy page-load moment
+    // below 60% of the target → lower the pixel density once (Low Power Mode's 30 fps cap lands here too, harmless)
+    // only below 18 fps after that → really struggling, switch to the still image
+    const slow = maxPixelRatio > 1 ? fps < TARGET_FPS * 0.6 : fps < 18;
+    if (!slow) { slowWindows = 0; return; }
+    if (++slowWindows < 2) return;                          // two slow stretches in a row
+    slowWindows = 0;
+    if (maxPixelRatio > 1) {
+      maxPixelRatio = 1; renderer.setPixelRatio(1); resize();
+    } else {
+      running = false;                                      // give up: the still image takes over
+      hero.classList.remove("has-3d");
+      setTimeout(() => { canvas.remove(); renderer.dispose(); }, 1500);
+    }
+  }
+
+  function frame(now = performance.now()) {
+    if (!running) return;
     requestAnimationFrame(frame);
-    if (!visible || document.hidden) { clock.getDelta(); return; }
+    if (!visible || document.hidden) { clock.getDelta(); winStart = 0; return; }
+    if (now - lastDraw < minGap) return;                    // 30 fps on phones
+    lastDraw = now;
+    checkSpeed(now);
+    if (SIMSLOW) { const end = performance.now() + 70; while (performance.now() < end); }   // ?perf&simslow: fake a weak phone
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = clock.elapsedTime;
 
@@ -163,8 +202,11 @@ async function start() {
     ry = TEST ? spin * 0.12 : SIDE + Math.sin(spin * 0.22) * 0.3;   // ±17° (was ±35°, user wanted half)
     pivot.rotation.set(-0.05, ry, 0);
     pivot.position.y = Math.sin(t * 0.7) * 0.04;
+    const t0 = PERF ? performance.now() : 0;
     renderer.render(scene, camera);
+    if (PERF) perf.frame(performance.now() - t0);
   }
+  const perf = PERF ? perfMeter(renderer, canvas) : null;
   frame();
   performance.mark("b3d-firstframe");
 
@@ -284,4 +326,30 @@ function makeStandIn(THREE) {
   geo.computeVertexNormals();
   const mat = new THREE.MeshPhysicalMaterial({ color: 0x0e0d0b, roughness: 0.32, metalness: 0.35, clearcoat: 0.7, clearcoatRoughness: 0.25 });
   return new THREE.Mesh(geo, mat);
+}
+
+// ?perf: small overlay with frames per second, how long each frame's drawing takes on the
+// processor (CPU), and how many pixels/triangles the 3D brain draws. Only shown with ?perf.
+function perfMeter(renderer, canvas) {
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;left:8px;bottom:8px;z-index:9999;padding:8px 10px;border-radius:8px;" +
+    "background:rgba(0,0,0,.8);color:#9f9;font:12px/1.45 ui-monospace,Menlo,monospace;white-space:pre;pointer-events:none";
+  document.body.appendChild(box);
+  let n = 0, cpu = 0, last = performance.now();
+  window.__b3dPerf = {};
+  return {
+    frame(ms) {
+      n++; cpu += ms;
+      const now = performance.now();
+      if (now - last < 1000) return;
+      const fps = n * 1000 / (now - last);
+      const px = canvas.width * canvas.height;
+      const stats = { fps: Math.round(fps), cpuMsPerFrame: +(cpu / n).toFixed(2), canvas: canvas.width + "x" + canvas.height,
+        megapixels: +(px / 1e6).toFixed(2), pixelRatio: +renderer.getPixelRatio().toFixed(2),
+        targetFps: TARGET_FPS, triangles: renderer.info.render.triangles, mpixPerSecond: Math.round(px * fps / 1e6) };
+      window.__b3dPerf = stats;
+      box.textContent = "3D brain\n" + Object.entries(stats).map(([k, v]) => k + ": " + v).join("\n");
+      n = 0; cpu = 0; last = now;
+    },
+  };
 }

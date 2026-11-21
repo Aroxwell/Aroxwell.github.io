@@ -50,5 +50,13 @@
     }
   }
 
+  // Pause the hero's animations (dust, comets, glow) while it's scrolled out of view: saves battery/heat
+  var heroEl = document.querySelector(".hero");
+  if (heroEl && "IntersectionObserver" in window) {
+    new IntersectionObserver(function (entries) {
+      heroEl.classList.toggle("offscreen", !entries[0].isIntersecting);
+    }).observe(heroEl);
+  }
+
   // No mouse control: the hero brain moves on its own (CSS "turn" loop / brain3d.js).
 })();
