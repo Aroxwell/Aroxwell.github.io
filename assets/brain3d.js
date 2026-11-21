@@ -10,7 +10,8 @@
 // three.js is self-hosted in /assets/vendor/three (MIT licence) and only downloaded once we
 // know a model will actually be shown.
 
-const MODEL_URL = "/assets/brain.glb";
+const MODEL_URL = "/assets/brain.glb";   // also preloaded by the inline script in each page's <head>
+const DRACO_PATH = "/assets/vendor/three/examples/jsm/libs/draco/gltf/";
 
 const hero = document.querySelector(".hero");
 const visual = hero && hero.querySelector(".hero-visual");
@@ -37,13 +38,23 @@ if (LIVE && visual && !reduceMotion && !saveData && webglAvailable()) {
 }
 
 async function start() {
+  performance.mark("b3d-start");
+  // Everything downloads in parallel (the page <head> already started these downloads):
+  // three.js + loaders, then the model starts loading/decoding while the renderer is set up.
+  const [THREE, { RoomEnvironment }, { GLTFLoader }, { DRACOLoader }] = await Promise.all([
+    import("three"),
+    import("three/addons/environments/RoomEnvironment.js"),
+    import("three/addons/loaders/GLTFLoader.js"),
+    import("three/addons/loaders/DRACOLoader.js"),
+  ]);
+  performance.mark("b3d-three");
+  let gltfP = null;
   if (!TEST) {
-    const head = await fetch(MODEL_URL, { method: "HEAD" }).catch(() => null);
-    if (!head || !head.ok) return false; // no model yet → keep the image
+    const draco = new DRACOLoader().setDecoderPath(DRACO_PATH);
+    draco.setDecoderConfig({ type: "wasm" });
+    gltfP = new GLTFLoader().setDRACOLoader(draco).loadAsync(MODEL_URL);
+    gltfP.catch(() => {});   // handled below; avoids an "unhandled rejection" warning meanwhile
   }
-
-  const THREE = await import("three");
-  const { RoomEnvironment } = await import("three/addons/environments/RoomEnvironment.js");
 
   // ---------- renderer & scene ----------
   const canvas = document.createElement("canvas");
@@ -81,11 +92,9 @@ async function start() {
   if (TEST) {
     brain = makeStandIn(THREE);
   } else {
-    const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
-    const { DRACOLoader } = await import("three/addons/loaders/DRACOLoader.js");
-    const draco = new DRACOLoader().setDecoderPath("/assets/vendor/three/examples/jsm/libs/draco/gltf/");
-    draco.setDecoderConfig({ type: "wasm" });
-    const gltf = await new GLTFLoader().setDRACOLoader(draco).loadAsync(MODEL_URL);
+    let gltf;
+    try { gltf = await gltfP; } catch (e) { canvas.remove(); renderer.dispose(); return false; } // no model → keep the image
+    performance.mark("b3d-glb");
     brain = gltf.scene;
     const mat = obsidianGold(THREE);
     const gold = laurelGold(THREE, scene.environment);
@@ -157,6 +166,7 @@ async function start() {
     renderer.render(scene, camera);
   }
   frame();
+  performance.mark("b3d-firstframe");
 
   requestAnimationFrame(() => { hero.classList.add("has-3d"); showStill(); });
   return true;

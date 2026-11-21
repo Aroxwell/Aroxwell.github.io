@@ -3,10 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- import map first: the script below preloads three.js modules, which need it to resolve "three" -->
+  <script type="importmap">{"imports": {"three": "/assets/vendor/three/build/three.module.min.js", "three/addons/": "/assets/vendor/three/examples/jsm/"}}</script>
   <script>/* live 3D brain coming? hide the still image until it's ready, so there's no flash of a second brain (assets/brain3d.js) */
   (function () { try { var d = document.documentElement;
     if (location.search.indexOf("still") < 0 && window.WebGLRenderingContext && !matchMedia("(prefers-reduced-motion: reduce)").matches && !(navigator.connection && navigator.connection.saveData)) {
-      d.classList.add("brain-pending"); setTimeout(function () { d.classList.remove("brain-pending"); }, 8000); }
+      d.classList.add("brain-pending"); setTimeout(function () { d.classList.remove("brain-pending"); }, 8000);
+      var v = "/assets/vendor/three/", pre = function (h, rel) { var l = document.createElement("link"); l.rel = rel || "preload"; l.href = h;
+        if (!rel) { l.as = "fetch"; l.crossOrigin = "anonymous"; } document.head.appendChild(l); };
+      ["/assets/brain3d.js", v + "build/three.module.min.js", v + "examples/jsm/environments/RoomEnvironment.js", v + "examples/jsm/loaders/GLTFLoader.js",
+       v + "examples/jsm/loaders/DRACOLoader.js", v + "examples/jsm/utils/BufferGeometryUtils.js"].forEach(function (h) { pre(h, "modulepreload"); });
+      ["/assets/brain.glb", v + "examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js", v + "examples/jsm/libs/draco/gltf/draco_decoder.wasm"].forEach(function (h) { pre(h); }); }
   } catch (e) {} })();</script>
   <title>Aroxwell | Master your mind</title>
   <meta name="description" content="Book breakdowns on psychology and the brain, for people who want mastery over their own mind. Watch on YouTube and grab the free guides.">
@@ -143,7 +150,6 @@
   </footer>
 
   <script src="/assets/site.js" defer></script>
-  <script type="importmap">{"imports": {"three": "/assets/vendor/three/build/three.module.min.js", "three/addons/": "/assets/vendor/three/examples/jsm/"}}</script>
   <script type="module" src="/assets/brain3d.js"></script>
 </body>
 </html>
