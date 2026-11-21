@@ -27,14 +27,19 @@ function webglAvailable() {
   } catch (e) { return false; }
 }
 
+// The page <head> hides the still image ("brain-pending") when 3D is likely; show it again if 3D can't run.
+const showStill = () => document.documentElement.classList.remove("brain-pending");
 if (LIVE && visual && !reduceMotion && !saveData && webglAvailable()) {
-  start().catch((e) => console.warn("3D brain not shown:", e));
+  start().then((ok) => { if (!ok) showStill(); })
+    .catch((e) => { showStill(); console.warn("3D brain not shown:", e); });
+} else {
+  showStill();
 }
 
 async function start() {
   if (!TEST) {
     const head = await fetch(MODEL_URL, { method: "HEAD" }).catch(() => null);
-    if (!head || !head.ok) return; // no model yet → keep the image
+    if (!head || !head.ok) return false; // no model yet → keep the image
   }
 
   const THREE = await import("three");
@@ -153,7 +158,8 @@ async function start() {
   }
   frame();
 
-  requestAnimationFrame(() => hero.classList.add("has-3d"));
+  requestAnimationFrame(() => { hero.classList.add("has-3d"); showStill(); });
+  return true;
 }
 
 // Obsidian with kintsugi gold, matched to design inspo/Gilded Obsidian Brain Sculpture.png.

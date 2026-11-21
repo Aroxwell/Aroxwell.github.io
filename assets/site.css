@@ -611,6 +611,7 @@ main { flex: 1; }
 .has-3d .brain-canvas { opacity: 1; }
 .hero-visual .sculpture { transition: opacity 1.2s var(--ease); }
 .has-3d .hero-visual .sculpture { opacity: 0; }
+.brain-pending .hero-visual .sculpture { opacity: 0 !important; } /* set in <head> while the 3D brain loads */
 /* with the 3D brain, the brain turns itself: keep the scene (and the SVG orbit rings) level */
 .has-3d.hero { animation: none; }
 .has-3d .stage { transform: none; }

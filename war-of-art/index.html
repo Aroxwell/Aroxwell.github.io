@@ -3,6 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>/* live 3D brain coming? hide the still image until it's ready, so there's no flash of a second brain (assets/brain3d.js) */
+  (function () { try { var d = document.documentElement;
+    if (location.search.indexOf("still") < 0 && window.WebGLRenderingContext && !matchMedia("(prefers-reduced-motion: reduce)").matches && !(navigator.connection && navigator.connection.saveData)) {
+      d.classList.add("brain-pending"); setTimeout(function () { d.classList.remove("brain-pending"); }, 8000); }
+  } catch (e) {} })();</script>
   <title>Free The War of Art Action Plan | Aroxwell</title>
   <meta name="description" content="A practical action framework inspired by The War of Art to help you overcome resistance and start meaningful work. Free, straight to your inbox.">
   <link rel="canonical" href="https://aroxwell.com/war-of-art/">

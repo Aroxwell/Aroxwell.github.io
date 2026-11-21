@@ -3,6 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>/* live 3D brain coming? hide the still image until it's ready, so there's no flash of a second brain (assets/brain3d.js) */
+  (function () { try { var d = document.documentElement;
+    if (location.search.indexOf("still") < 0 && window.WebGLRenderingContext && !matchMedia("(prefers-reduced-motion: reduce)").matches && !(navigator.connection && navigator.connection.saveData)) {
+      d.classList.add("brain-pending"); setTimeout(function () { d.classList.remove("brain-pending"); }, 8000); }
+  } catch (e) {} })();</script>
   <title>Page not found | Aroxwell</title>
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#060606">
